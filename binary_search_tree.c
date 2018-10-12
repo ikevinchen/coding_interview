@@ -81,15 +81,15 @@ int FindMax(Node *iter) {
     return iter->data;
 }
 
-Node* Delete(Node *cur_node, int target) {
+Node* NewRootAfterDelete(Node *cur_node, int target) {
     if (cur_node == NULL) {
         return NULL;
     }
     if (target < cur_node->data) {
-        cur_node->left = Delete(cur_node->left, target);
+        cur_node->left = NewRootAfterDelete(cur_node->left, target);
         return cur_node;
     } else if (target > cur_node->data) {
-        cur_node->right = Delete(cur_node->right, target);
+        cur_node->right = NewRootAfterDelete(cur_node->right, target);
         return cur_node;
     } else {
         if (cur_node->left == NULL && cur_node->right == NULL) {
@@ -106,10 +106,14 @@ Node* Delete(Node *cur_node, int target) {
         } else {
             int left_max = FindMax(cur_node->left);
             cur_node->data = left_max;
-            cur_node->left = Delete(cur_node->left, left_max);
+            cur_node->left = NewRootAfterDelete(cur_node->left, left_max);
             return cur_node;
         }
     }
+}
+
+void Delete(Node **root, int target) {
+    *root = NewRootAfterDelete(*root, target);
 }
 
 int main() {
@@ -124,20 +128,13 @@ int main() {
     Insert(&root, 7);
     Print(root);
     
-    root = Delete(root, 4);
-    Print(root);
-    root = Delete(root, 2);
-    Print(root);
-    root = Delete(root, 1);
-    Print(root);
-    root = Delete(root, 3);
-    Print(root);
-    root = Delete(root, 6);
-    Print(root);
-    root = Delete(root, 5);
-    Print(root);
-    root = Delete(root, 7);
-    Print(root);
+    Delete(&root, 4); Print(root);
+    Delete(&root, 2); Print(root);
+    Delete(&root, 1); Print(root);
+    Delete(&root, 3); Print(root);
+    Delete(&root, 6); Print(root);
+    Delete(&root, 5); Print(root);
+    Delete(&root, 7); Print(root);
 
     return 0;
 }
