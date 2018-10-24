@@ -2,87 +2,95 @@
 #include <unordered_map>
 using namespace std;
 
-/* key : sum, data : reference count */
-typedef unordered_map<int,int> HashMap;
+unordered_map<int, int> Hash; /* sum, ref_cnt */
 
-typedef struct node {
+void previous_sum_add(int sum) {
+    unordered_map<int, int>::iterator iter = Hash.find(sum);
+    if (iter == Hash.end()) {
+        pair<int, int> new_entry (sum, 1);
+        Hash.insert(new_entry);
+    } else {
+        iter->second++;
+    }
+}
+
+void previous_sum_del(int sum) {
+    unordered_map<int, int>::iterator iter = Hash.find(sum);
+    if (iter == Hash.end()) {
+        cout << "something wrong" << endl;
+    } else {
+        iter->second--;
+        if (iter->second == 0) {
+            Hash.erase(iter);
+        }
+    }
+}
+
+int previous_sum_count(int sum) {
+    unordered_map<int, int>::iterator iter = Hash.find(sum);
+    if (iter == Hash.end()) {
+        return 0;
+    } else {
+        return iter->second;
+    }
+}
+
+typedef struct node_s {
     int data;
-    struct node *left, *right;
-} Node;
+    struct node_s* left;
+    struct node_s* right;
+} Node_t ;
 
-void check_node(Node *n, HashMap *hash,
-                int last_sum, int target, int *ans) {
-    HashMap::iterator iter;
-    int cur_sum = last_sum + n->data;
+int answer = 0;
 
-    /* ans increse when
-        1) cur_sum meet targe
-        2) some previous path sum meet targe
+void check(Node_t *node, int last_sum, int target) {
+    /*
+        At each node, we check the sum that from every starting node.
+
+        Ex, at node D, we check the sum (A-->D) (B-->D) (C-->D) (D)
+        The precious sum has alreay record (A) (A-->B) (A-->C)
+
+        so we need to check
+            (1) A-->D            (last_sum + D)
+            (2) B-->D, C-->D , D (last_sum - each previous sum)
+
+                  A ---> B ---> C ---> D
+                |---|   *****************
+                |--------|     **********
+                |----------------|    ***
+                  (previous sum)
+
      */
-    if (cur_sum == target) {
-        (*ans) ++;
-    }
 
-    iter = hash->find(cur_sum-target);
-    if(iter!=hash->end()) {
-        (*ans) += iter->second;
-    }
+     int cur_sum = last_sum + node->data;
+     if (cur_sum == target) {
+        answer++;
+     }
+     answer += previous_sum_count(cur_sum-target);
 
-    /* traverse downward if there is child */
-    if (n->left != NULL || n->right != NULL) {
-        /* add this cur_sum into hash */
-        iter = hash->find(cur_sum);
-        if(iter!=hash->end()) {
-            iter->second++;
-        } else {
-            hash->insert(HashMap::value_type(cur_sum, 1));
-            //or hash->insert(pair<int,int>(cur_sum, 1));
-        }
-
-        /* traverse child */
-        if(n->left != NULL) {
-            check_node(n->left, hash, cur_sum, target, ans);
-        }
-        if(n->right != NULL) {
-            check_node(n->right, hash, cur_sum, target, ans);
-        }
-
-        /* delete hash after back */
-        iter = hash->find(cur_sum);
-        if (iter->second == 1) {
-            hash->erase(iter);
-        } else {
-            iter->second--;
-        }
-    }
+     /* traverse next */
+     previous_sum_add(cur_sum);
+     if(node->left != NULL)  check(node->left,  cur_sum, target);
+     if(node->right != NULL) check(node->right, cur_sum, target);
+     previous_sum_del(cur_sum);
 }
-
-void check(Node *root, int target) {
-    HashMap hash;
-    int ans = 0;
-    if (root != NULL) {
-        check_node(root, &hash, 0, target, &ans);
-    }
-    cout << "ans = " << ans << endl;
-}
-
 
 int main() {
-    Node *root = NULL;
-    Node *n_0 = new Node();
-    Node *n_1 = new Node();
-    Node *n_2 = new Node();
-    Node *n_3 = new Node();
-    Node *n_4 = new Node();
-    Node *n_5 = new Node();
-    Node *n_6 = new Node();
-    Node *n_7 = new Node();
+    Node_t *root = NULL;
+    Node_t *n_0 = new Node_t();
+    Node_t *n_1 = new Node_t();
+    Node_t *n_2 = new Node_t();
+    Node_t *n_3 = new Node_t();
+    Node_t *n_4 = new Node_t();
+    Node_t *n_5 = new Node_t();
+    Node_t *n_6 = new Node_t();
+    Node_t *n_7 = new Node_t();
 
     /*
                 3
-              /    \
+              /
             1       -1
-          /   \    /   \
+          /   \    /
         -1    -1  -2    1
                   /
                  0
@@ -98,5 +106,9 @@ int main() {
     n_6->data = 1;      n_6->left = NULL;   n_6->right = NULL;
     n_7->data = 0;      n_7->left = NULL;   n_7->right = NULL;
 
-    check(root, 0);
+
+    answer = 0;
+    check(root, 0, 0);
+    cout << "answer = " << answer << endl;
+    return 0;
 }
