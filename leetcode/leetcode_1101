@@ -1,10 +1,18 @@
 #include <iostream>
 #include <vector>
+#include <algorithm> 
 using namespace std;
+
+bool compareVector(vector<int> i1, vector<int> i2) 
+{ 
+    return (i1[0] < i2[0]); 
+} 
 
 class Solution {
 public:
     int earliestAcq(vector<vector<int>>& logs, int n) {
+        
+        sort(logs.begin(), logs.end(), compareVector); 
         
         /* init */
         for (int i = 0; i < n; i++) {
@@ -68,10 +76,10 @@ int main()
 {
 	vector<vector<int>> vect
     { 
+    	{20190211,1,5},
     	{20190101,0,1},
     	{20190104,3,4},
     	{20190107,2,3},
-    	{20190211,1,5},
     	{20190224,2,4},
     	{20190301,0,3},
     	{20190312,1,2},
